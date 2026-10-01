@@ -1,0 +1,21 @@
+booking_id,flight_id,passenger_name,fare_class,fare_paid,frequent_flyer_tier,checkin_timestamp,has_connecting_flight,special_assistance
+BK-1001,AI-402,Elena Rostova,First,95000,Platinum,2026-09-20 06:15:20,True,False
+BK-1002,AI-402,Marcus Vance,First,88000,Gold,2026-09-20 06:22:10,False,False
+BK-1003,AI-402,Sophia Chen,Business,58000,Platinum,2026-09-20 07:05:44,True,False
+BK-1004,AI-402,Liam Gallagher,Business,52000,Silver,2026-09-20 07:18:32,False,False
+BK-1005,AI-402,Fatima Al-Mansoor,Business,60000,Gold,2026-09-20 07:30:15,True,False
+BK-1006,AI-402,Alexander Schmidt,Premium_Economy,32000,Gold,2026-09-20 08:02:11,False,False
+BK-1007,AI-402,Chloe Dubois,Premium_Economy,30000,Silver,2026-09-20 08:24:50,False,False
+BK-1008,AI-402,Kenji Takahashi,Premium_Economy,34000,Standard,2026-09-20 08:45:19,True,False
+BK-1009,AI-402,Aisha Diallo,Economy,18500,Gold,2026-09-20 09:10:04,False,False
+BK-1010,AI-402,David Miller,Economy,16000,Silver,2026-09-20 09:35:40,False,False
+BK-1011,AI-402,Maria Garcia,Economy,14500,Standard,2026-09-20 09:40:12,False,True
+BK-1012,AI-402,Oliver Wright,Economy,15000,Standard,2026-09-20 09:55:00,False,False
+BK-1013,AI-402,Priya Patel,Economy,16500,Standard,2026-09-20 10:12:30,True,False
+BK-1014,AI-402,Lucas Silva,Economy,7200,Standard,2026-09-20 10:45:18,False,False
+BK-1015,AI-402,Zoe Martin,Economy,6800,Standard,2026-09-20 11:15:05,False,False
+BK-1016,AI-402,Noah Taylor,Economy,6400,Standard,2026-09-20 11:42:55,False,False
+BK-1017,AI-402,Grace Kim,Economy,6500,Standard,2026-09-20 12:05:22,False,False
+BK-1018,AI-402,Benjamin Scott,Economy,6200,Standard,2026-09-20 12:20:41,False,False
+BK-1019,AI-402,Hannah Abbott,Economy,5900,Standard,2026-09-20 12:44:19,False,False
+BK-1020,AI-402,Daniel Jackson,Economy,5800,Standard,2026-09-20 12:55:00,False,False

@@ -1,0 +1,6 @@
+{
+  "name": "Airline Overbooking Manager",
+  "description": "Interactive CS curriculum simulator and Python architecture lab for airline overbooking, featuring Binomial probability models, priority queue heaps, cabin seat matrices, and AI risk optimization.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
