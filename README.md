@@ -247,10 +247,26 @@ If you prefer to configure the service manually on Render:
 5. Add the following **Environment Variables**:
    | Key | Value | Notes |
    | :--- | :--- | :--- |
-   | `NODE_VERSION` | `22.14.0` | Ensures Render provisions Node 22 with ESM/TS support |
-   | `NODE_ENV` | `production` | Enables production static caching |
-   | `GEMINI_API_KEY` | `your-gemini-api-key` | Secret key for Gemini risk optimization |
-6. Click **Create Web Service**. Render will execute `npm install && npm run build` and launch the app via `npm start`.
+   | `NODE_VERSION` | `22.14.0` | Pin to Node 22 (also configured in `.nvmrc` and `.node-version`) |
+   | `NODE_ENV` | `production` | Enables high-performance static asset caching |
+   | `GEMINI_API_KEY` | `your-gemini-api-key` | Operational secret for Gemini risk optimization |
+6. Click **Create Web Service**.
+
+### Method 3: Containerized Docker Deployment on Render
+
+Render also supports building directly from the project's multi-stage `Dockerfile`:
+
+1. In the Render Dashboard, click **New +** → **Web Service**.
+2. Connect your GitHub repository.
+3. Choose **Docker** as the environment.
+4. Render will automatically detect the root `Dockerfile` and `.dockerignore`, build the optimized production image, and bind to `0.0.0.0:${PORT}`.
+5. In **Environment Variables**, add `GEMINI_API_KEY`.
+
+### Production Network Binding on Render
+
+- **No localhost restriction**: On Render, the server binds to `0.0.0.0` across all IPv4 interfaces, listening on the dynamic port assigned by Render via `process.env.PORT`.
+- **Public URL**: Traffic is automatically secured and served via HTTPS at your custom Render domain: `https://<your-service-name>.onrender.com`.
+- **Health Checks**: Render pings `/health` to verify zero-downtime rolling deploys.
 
 ---
 

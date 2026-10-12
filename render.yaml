@@ -15,7 +15,5 @@ services:
         value: 22.14.0
       - key: NODE_ENV
         value: production
-      - key: PORT
-        value: 10000
       - key: GEMINI_API_KEY
         sync: false

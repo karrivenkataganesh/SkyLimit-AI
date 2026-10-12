@@ -1,14 +1,18 @@
-# Multi-stage production Dockerfile for containerized deployment (Cloud Run, Railway, Render, Fly.io, AWS ECS, DigitalOcean)
+# Production Container for Airline Overbooking Manager
 FROM node:22-alpine AS builder
 
 WORKDIR /app
 
-# Install dependencies
-COPY package.json package-lock.json* bun.lock* ./
+# Copy dependency specifications
+COPY package*.json ./
+
+# Install dependencies for build
 RUN npm install
 
-# Copy source files and build frontend bundle
+# Copy source code
 COPY . .
+
+# Build Vite frontend distribution
 RUN npm run build
 
 # Production runner stage
@@ -17,22 +21,17 @@ FROM node:22-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
-ENV PORT=8080
+ENV HOST=0.0.0.0
 
-# Install production dependencies only
-COPY package.json package-lock.json* bun.lock* ./
-RUN npm install --omit=dev
-
-# Copy build artifacts and necessary runtime code
+# Copy necessary production artifacts
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/backend ./backend
-COPY --from=builder /app/java-core ./java-core
-COPY --from=builder /app/python_curriculum ./python_curriculum
 COPY --from=builder /app/server.ts ./server.ts
-COPY --from=builder /app/tsconfig.json ./tsconfig.json
+COPY --from=builder /app/backend ./backend
 
-# Expose container port
-EXPOSE 8080
+# Default Render / container port
+EXPOSE 3000 10000
 
-# Start server using Node 22 native TypeScript runtime
+# Start production server binding to 0.0.0.0
 CMD ["node", "server.ts"]

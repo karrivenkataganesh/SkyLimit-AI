@@ -82,8 +82,18 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`[Airline Overbooking Manager] Server successfully listening on http://0.0.0.0:${PORT}`);
+  const HOST = process.env.HOST || "0.0.0.0";
+  app.listen(PORT, HOST, () => {
+    const isRender = Boolean(process.env.RENDER);
+    const renderUrl =
+      process.env.RENDER_EXTERNAL_URL ||
+      (process.env.RENDER_EXTERNAL_HOSTNAME ? `https://${process.env.RENDER_EXTERNAL_HOSTNAME}` : null);
+
+    if (isRender && renderUrl) {
+      console.log(`[Airline Overbooking Manager] Live on Render at ${renderUrl} (internal: ${HOST}:${PORT})`);
+    } else {
+      console.log(`[Airline Overbooking Manager] Server successfully bound to network interface ${HOST}:${PORT}`);
+    }
   });
 }
 
