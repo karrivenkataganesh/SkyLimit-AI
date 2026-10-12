@@ -1,0 +1,53 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/index.ts",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/index.ts"
+    },
+    {
+      "src": "/health",
+      "dest": "/api/index.ts"
+    },
+    {
+      "src": "/frontend",
+      "status": 302,
+      "headers": { "Location": "/#curriculum?category=frontend" }
+    },
+    {
+      "src": "/backend",
+      "status": 302,
+      "headers": { "Location": "/#curriculum?category=backend" }
+    },
+    {
+      "src": "/java-core",
+      "status": 302,
+      "headers": { "Location": "/#curriculum?category=java-core" }
+    },
+    {
+      "src": "/python",
+      "status": 302,
+      "headers": { "Location": "/#curriculum?category=python" }
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ]
+}

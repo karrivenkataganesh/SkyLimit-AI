@@ -1,0 +1,33 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# Backend API proxy or serverless redirection
+[[redirects]]
+  from = "/frontend"
+  to = "/#curriculum?category=frontend"
+  status = 302
+
+[[redirects]]
+  from = "/backend"
+  to = "/#curriculum?category=backend"
+  status = 302
+
+[[redirects]]
+  from = "/java-core"
+  to = "/#curriculum?category=java-core"
+  status = 302
+
+[[redirects]]
+  from = "/python"
+  to = "/#curriculum?category=python"
+  status = 302
+
+# Fallback for Single Page Application client routing
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
