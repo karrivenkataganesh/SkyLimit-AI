@@ -310,36 +310,6 @@ export const SimulationDashboard: React.FC<Props> = ({
 
       {/* Main Dual-Axis Interactive Chart: Seat Utilization vs Bump Risk */}
       <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 shadow-xl">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-          <div>
-            <h3 className="text-base font-bold text-white flex items-center gap-2">
-              <span>Seat Utilization vs. Bump Risk Dual-Axis Curve</span>
-              <span className="text-xs font-normal px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
-                Binomial Stochastic Model
-              </span>
-            </h3>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Hover along the curve to inspect discrete probability points and marginal revenue trade-offs.
-            </p>
-          </div>
-
-          {/* Legend */}
-          <div className="flex items-center gap-4 text-xs font-medium">
-            <div className="flex items-center gap-1.5">
-              <span className="w-3 h-0.5 bg-rose-500 rounded-full" />
-              <span className="text-rose-400">Bump Risk (%)</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="w-3 h-0.5 bg-emerald-500 rounded-full" />
-              <span className="text-emerald-400">Net Profit (₹)</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-sky-400" />
-              <span className="text-sky-300">Optimal Peak</span>
-            </div>
-          </div>
-        </div>
-
         {/* SVG Chart */}
         <div className="w-full overflow-x-auto">
           <div className="min-w-[680px]">

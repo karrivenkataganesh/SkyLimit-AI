@@ -240,12 +240,6 @@ export default function App() {
     return () => window.removeEventListener("hashchange", checkHash);
   }, []);
 
-  const handleRedirectSubsystem = (cat: "frontend" | "backend" | "java-core" | "python") => {
-    setActiveTab("curriculum");
-    setCurriculumCategory(cat);
-    window.location.hash = `curriculum?category=${cat}`;
-  };
-
   const [flightParams, setFlightParams] = useState<FlightParams>({
     route: "DEL-BOM",
     capacity: 180,
@@ -466,61 +460,6 @@ export default function App() {
                 </button>
               );
             })}
-            {/* Quick Subsystem Redirection Section */}
-            <div className="pt-3 border-t border-slate-800/80">
-              <div className="px-2 pb-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                Subsystem Redirects
-              </div>
-              <div className="grid grid-cols-2 gap-1.5">
-                <button
-                  onClick={() => handleRedirectSubsystem("frontend")}
-                  className={`p-2 rounded-lg text-left text-[11px] font-medium border transition-all cursor-pointer ${
-                    activeTab === "curriculum" && curriculumCategory === "frontend"
-                      ? "bg-sky-500/20 text-sky-300 border-sky-500/40"
-                      : "bg-slate-900/60 text-slate-400 border-slate-800/80 hover:bg-slate-850 hover:text-slate-200"
-                  }`}
-                >
-                  <div className="font-semibold text-sky-400">Frontend</div>
-                  <div className="text-[10px] text-slate-400">React &bull; TS</div>
-                </button>
-
-                <button
-                  onClick={() => handleRedirectSubsystem("backend")}
-                  className={`p-2 rounded-lg text-left text-[11px] font-medium border transition-all cursor-pointer ${
-                    activeTab === "curriculum" && curriculumCategory === "backend"
-                      ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
-                      : "bg-slate-900/60 text-slate-400 border-slate-800/80 hover:bg-slate-850 hover:text-slate-200"
-                  }`}
-                >
-                  <div className="font-semibold text-emerald-400">Backend</div>
-                  <div className="text-[10px] text-slate-400">Node &bull; Express</div>
-                </button>
-
-                <button
-                  onClick={() => handleRedirectSubsystem("java-core")}
-                  className={`p-2 rounded-lg text-left text-[11px] font-medium border transition-all cursor-pointer ${
-                    activeTab === "curriculum" && curriculumCategory === "java-core"
-                      ? "bg-amber-500/20 text-amber-300 border-amber-500/40"
-                      : "bg-slate-900/60 text-slate-400 border-slate-800/80 hover:bg-slate-850 hover:text-slate-200"
-                  }`}
-                >
-                  <div className="font-semibold text-amber-400">Java Core</div>
-                  <div className="text-[10px] text-slate-400">OOP &bull; Heaps</div>
-                </button>
-
-                <button
-                  onClick={() => handleRedirectSubsystem("python")}
-                  className={`p-2 rounded-lg text-left text-[11px] font-medium border transition-all cursor-pointer ${
-                    activeTab === "curriculum" && curriculumCategory === "python"
-                      ? "bg-indigo-500/20 text-indigo-300 border-indigo-500/40"
-                      : "bg-slate-900/60 text-slate-400 border-slate-800/80 hover:bg-slate-850 hover:text-slate-200"
-                  }`}
-                >
-                  <div className="font-semibold text-indigo-400">Python Lab</div>
-                  <div className="text-[10px] text-slate-400">NumPy &bull; Pandas</div>
-                </button>
-              </div>
-            </div>
           </nav>
 
           {/* Sidebar Footer info */}

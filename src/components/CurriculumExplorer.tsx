@@ -288,60 +288,14 @@ export const CurriculumExplorer: React.FC<CurriculumExplorerProps> = ({
         })}
       </div>
 
-      {/* Main Layout: File Selector Sidebar + Code Viewer */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Sidebar: File List */}
-        <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-4 shadow-xl space-y-3">
-          <div className="flex items-center justify-between text-xs font-semibold text-slate-400 uppercase tracking-wider px-2">
-            <span>Files ({filteredFiles.length})</span>
-            <span className="font-mono text-[11px] text-sky-400">
-              {selectedCategory.toUpperCase()}
-            </span>
-          </div>
-
-          <div className="space-y-1.5 max-h-[580px] overflow-y-auto pr-1 custom-scrollbar">
-            {loading ? (
-              <div className="p-4 text-xs text-slate-500 text-center">Loading files...</div>
-            ) : filteredFiles.length === 0 ? (
-              <div className="p-4 text-xs text-slate-500 text-center">No files in this category.</div>
-            ) : (
-              filteredFiles.map((f) => {
-                const isSelected = f.name === currentFile?.name;
-
-                return (
-                  <button
-                    key={`${f.category}-${f.name}`}
-                    onClick={() => setSelectedFileName(f.name)}
-                    className={`w-full text-left p-2.5 rounded-lg border transition-all flex items-start gap-2.5 cursor-pointer ${
-                      isSelected
-                        ? "bg-sky-950/80 border-sky-500/60 text-white shadow-sm ring-1 ring-sky-500/30"
-                        : "bg-slate-800/30 border-slate-800/80 text-slate-400 hover:bg-slate-800/80 hover:text-slate-200"
-                    }`}
-                  >
-                    <div className="mt-0.5 shrink-0">{getFileIcon(f)}</div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-xs font-mono font-semibold truncate text-white">
-                          {f.name}
-                        </span>
-                      </div>
-                      <div className="text-[11px] text-slate-400 truncate mt-0.5">{f.title}</div>
-                      <div className="mt-1">{getCategoryBadge(f.category)}</div>
-                    </div>
-                    {isSelected && <ChevronRight className="w-4 h-4 text-sky-400 shrink-0 self-center" />}
-                  </button>
-                );
-              })
-            )}
-          </div>
-        </div>
-
+      {/* Main Layout: Code Viewer (Full Width) */}
+      <div className="w-full">
         {/* Code & Content Viewer */}
-        <div className="lg:col-span-3 bg-slate-900/80 border border-slate-800 rounded-xl shadow-xl overflow-hidden flex flex-col">
+        <div className="bg-slate-900/80 border border-slate-800 rounded-xl shadow-xl overflow-hidden flex flex-col">
           {/* Header Bar */}
           <div className="p-4 bg-slate-950/90 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <div className="flex items-center gap-2 font-mono text-sm font-bold text-white">
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-wrap items-center gap-2 font-mono text-sm font-bold text-white">
                 {currentFile && getFileIcon(currentFile)}
                 <span>{currentFile?.name}</span>
                 {currentFile?.category && getCategoryBadge(currentFile.category)}
@@ -352,8 +306,28 @@ export const CurriculumExplorer: React.FC<CurriculumExplorerProps> = ({
               <p className="text-xs text-slate-400 mt-1">{currentFile?.desc}</p>
             </div>
 
-            {/* Actions */}
-            <div className="flex items-center gap-2">
+            {/* Actions: File switcher + Copy + Download */}
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
+              {filteredFiles.length > 1 && (
+                <div className="flex items-center gap-1.5 mr-1">
+                  <label htmlFor="file-select" className="text-[11px] text-slate-400 font-mono hidden md:inline">
+                    Active File:
+                  </label>
+                  <select
+                    id="file-select"
+                    value={currentFile?.name || ""}
+                    onChange={(e) => setSelectedFileName(e.target.value)}
+                    className="bg-slate-800 border border-slate-700 text-white text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-sky-500 font-mono cursor-pointer"
+                  >
+                    {filteredFiles.map((f) => (
+                      <option key={`${f.category}-${f.name}`} value={f.name}>
+                        {f.name} ({f.title})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
               <button
                 onClick={handleCopy}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition-all cursor-pointer"
