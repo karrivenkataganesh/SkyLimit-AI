@@ -11,29 +11,99 @@ import {
   FileSpreadsheet,
   Layers,
   ChevronRight,
+  Server,
+  Layout,
+  Coffee,
+  ExternalLink,
+  Filter,
 } from "lucide-react";
 import { CurriculumFile } from "../types";
 
-export const CurriculumExplorer: React.FC = () => {
+type CategoryKey = "all" | "frontend" | "backend" | "java-core" | "python";
+
+interface CurriculumExplorerProps {
+  initialCategory?: CategoryKey;
+}
+
+export const CurriculumExplorer: React.FC<CurriculumExplorerProps> = ({
+  initialCategory = "all",
+}) => {
   const [files, setFiles] = useState<CurriculumFile[]>([]);
-  const [selectedFileName, setSelectedFileName] = useState<string>("overbooking_engine.py");
+  const [selectedCategory, setSelectedCategory] = useState<CategoryKey>(initialCategory);
+  const [selectedFileName, setSelectedFileName] = useState<string>("");
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  // Sync category from URL hash or query params if present
+  useEffect(() => {
+    const handleUrlHash = () => {
+      const hash = window.location.hash.toLowerCase();
+      const params = new URLSearchParams(window.location.search);
+      const catParam = params.get("category")?.toLowerCase();
+
+      if (catParam && ["frontend", "backend", "java-core", "python"].includes(catParam)) {
+        setSelectedCategory(catParam as CategoryKey);
+      } else if (hash.includes("frontend")) {
+        setSelectedCategory("frontend");
+      } else if (hash.includes("backend")) {
+        setSelectedCategory("backend");
+      } else if (hash.includes("java-core") || hash.includes("java")) {
+        setSelectedCategory("java-core");
+      } else if (hash.includes("python")) {
+        setSelectedCategory("python");
+      }
+    };
+
+    handleUrlHash();
+    window.addEventListener("hashchange", handleUrlHash);
+    return () => window.removeEventListener("hashchange", handleUrlHash);
+  }, []);
+
   // Fetch files from server endpoint
   useEffect(() => {
+    setLoading(true);
     fetch("/api/curriculum-files")
       .then((res) => res.json())
       .then((data) => {
         if (data.success && data.files) {
           setFiles(data.files);
+          // Set initial file
+          if (!selectedFileName && data.files.length > 0) {
+            setSelectedFileName(data.files[0].name);
+          }
         }
       })
       .catch((err) => console.error("Error loading curriculum files:", err))
       .finally(() => setLoading(false));
   }, []);
 
-  const currentFile = files.find((f) => f.name === selectedFileName) || files[0];
+  // Filtered files based on active category
+  const filteredFiles = files.filter((f) => {
+    if (selectedCategory === "all") return true;
+    return f.category === selectedCategory;
+  });
+
+  // Ensure selected file is within current filter
+  useEffect(() => {
+    if (filteredFiles.length > 0) {
+      const stillInFilter = filteredFiles.some((f) => f.name === selectedFileName);
+      if (!stillInFilter) {
+        setSelectedFileName(filteredFiles[0].name);
+      }
+    }
+  }, [selectedCategory, files]);
+
+  const currentFile =
+    filteredFiles.find((f) => f.name === selectedFileName) ||
+    filteredFiles[0] ||
+    files[0];
+
+  // Redirect to category helper
+  const handleRedirectCategory = (cat: CategoryKey) => {
+    setSelectedCategory(cat);
+    const newHash = cat === "all" ? "curriculum" : `curriculum?category=${cat}`;
+    window.history.replaceState(null, "", `#${newHash}`);
+  };
 
   const handleCopy = () => {
     if (!currentFile) return;
@@ -55,14 +125,16 @@ export const CurriculumExplorer: React.FC = () => {
     URL.revokeObjectURL(url);
   };
 
-  const handleDownloadAll = () => {
-    // Generate combined bundle file
+  const handleDownloadBundle = () => {
+    const targetFiles = filteredFiles.length > 0 ? filteredFiles : files;
     let bundle = `# =====================================================================\n`;
-    bundle += `# AIRLINE OVERBOOKING MANAGER: COMPLETE ACADEMIC PYTHON PACKAGE\n`;
+    bundle += `# AIRLINE OVERBOOKING MANAGER: ${selectedCategory.toUpperCase()} PACKAGE\n`;
+    bundle += `# Generated on: ${new Date().toISOString()}\n`;
     bundle += `# =====================================================================\n\n`;
 
-    files.forEach((f) => {
+    targetFiles.forEach((f) => {
       bundle += `\n# #####################################################################\n`;
+      bundle += `# CATEGORY: ${f.category || "General"}\n`;
       bundle += `# FILE: ${f.name}\n`;
       bundle += `# TITLE: ${f.title}\n`;
       bundle += `# DESCRIPTION: ${f.desc}\n`;
@@ -75,84 +147,192 @@ export const CurriculumExplorer: React.FC = () => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = "airline_overbooking_manager_complete_bundle.py";
+    link.download = `airline_overbooking_${selectedCategory}_bundle.txt`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
   };
 
+  const categories: {
+    id: CategoryKey;
+    label: string;
+    icon: React.ComponentType<{ className?: string }>;
+    color: string;
+    badgeBg: string;
+  }[] = [
+    {
+      id: "all",
+      label: "All Subsystems",
+      icon: Layers,
+      color: "text-slate-300",
+      badgeBg: "bg-slate-800 text-slate-300",
+    },
+    {
+      id: "frontend",
+      label: "Frontend (React / TS)",
+      icon: Layout,
+      color: "text-sky-400",
+      badgeBg: "bg-sky-500/20 text-sky-300 border-sky-500/30",
+    },
+    {
+      id: "backend",
+      label: "Backend (Node / Express)",
+      icon: Server,
+      color: "text-emerald-400",
+      badgeBg: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30",
+    },
+    {
+      id: "java-core",
+      label: "Java Core (OOP / Heaps)",
+      icon: Coffee,
+      color: "text-amber-400",
+      badgeBg: "bg-amber-500/20 text-amber-300 border-amber-500/30",
+    },
+    {
+      id: "python",
+      label: "Python Curriculum",
+      icon: Code,
+      color: "text-indigo-400",
+      badgeBg: "bg-indigo-500/20 text-indigo-300 border-indigo-500/30",
+    },
+  ];
+
+  const getFileIcon = (file: CurriculumFile) => {
+    if (file.type === "java") return <Coffee className="w-4 h-4 text-amber-400" />;
+    if (file.type === "typescript") return <Layout className="w-4 h-4 text-sky-400" />;
+    if (file.type === "python") return <FileCode className="w-4 h-4 text-indigo-400" />;
+    if (file.type === "csv") return <FileSpreadsheet className="w-4 h-4 text-emerald-400" />;
+    return <BookOpen className="w-4 h-4 text-purple-400" />;
+  };
+
+  const getCategoryBadge = (category?: string) => {
+    switch (category) {
+      case "frontend":
+        return <span className="text-[10px] px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 font-mono">Frontend</span>;
+      case "backend":
+        return <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono">Backend</span>;
+      case "java-core":
+        return <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono">Java Core</span>;
+      case "python":
+        return <span className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 font-mono">Python</span>;
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header Banner */}
-      <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 shadow-xl flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-              Complete Python Deliverables
+              Multi-Language Architecture
             </span>
             <span className="text-xs text-slate-400">Computer Science Curriculum Codebase</span>
           </div>
           <h3 className="text-lg font-bold text-white mt-1 flex items-center gap-2">
             <Code className="w-5 h-5 text-sky-400" />
-            <span>Python Source Code &amp; CSV Datasets Lab</span>
+            <span>Architecture &amp; Code Lab: Frontend, Backend, Java Core, and Python</span>
           </h3>
           <p className="text-xs text-slate-400 mt-0.5">
-            Modular architecture: Object-Oriented design, discrete probability, 2D arrays, and Min-Heaps.
+            Explore code organized by subsystem. Select a category below or redirect directly to Frontend, Backend, or Java Core.
           </p>
         </div>
 
         {/* Global Download Button */}
-        <button
-          onClick={handleDownloadAll}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-md shadow-emerald-600/20 transition-all cursor-pointer"
-        >
-          <FolderArchive className="w-4 h-4" />
-          <span>Download All Files Bundle</span>
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={handleDownloadBundle}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-md shadow-emerald-600/20 transition-all cursor-pointer"
+          >
+            <FolderArchive className="w-4 h-4" />
+            <span>Download {selectedCategory === "all" ? "All Files" : selectedCategory.toUpperCase()} Bundle</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Subsystem Redirection Bar (Tab Filters) */}
+      <div className="bg-slate-900/90 border border-slate-800 p-2 rounded-xl flex flex-wrap items-center gap-2">
+        <div className="flex items-center gap-1.5 px-3 py-1 text-xs font-semibold text-slate-400">
+          <Filter className="w-3.5 h-3.5 text-slate-400" />
+          <span>Subsystems:</span>
+        </div>
+
+        {categories.map((cat) => {
+          const Icon = cat.icon;
+          const isSelected = selectedCategory === cat.id;
+          const count =
+            cat.id === "all"
+              ? files.length
+              : files.filter((f) => f.category === cat.id).length;
+
+          return (
+            <button
+              key={cat.id}
+              onClick={() => handleRedirectCategory(cat.id)}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                isSelected
+                  ? "bg-slate-800 text-white shadow-md border border-slate-700 ring-1 ring-sky-500/50"
+                  : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/50"
+              }`}
+            >
+              <Icon className={`w-4 h-4 ${cat.color}`} />
+              <span>{cat.label}</span>
+              <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-950 font-mono text-slate-400 border border-slate-800">
+                {count}
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       {/* Main Layout: File Selector Sidebar + Code Viewer */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Sidebar: File List */}
         <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-4 shadow-xl space-y-3">
-          <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider px-2">
-            Project Deliverables ({files.length})
+          <div className="flex items-center justify-between text-xs font-semibold text-slate-400 uppercase tracking-wider px-2">
+            <span>Files ({filteredFiles.length})</span>
+            <span className="font-mono text-[11px] text-sky-400">
+              {selectedCategory.toUpperCase()}
+            </span>
           </div>
 
-          <div className="space-y-1">
-            {files.map((f) => {
-              const isSelected = f.name === selectedFileName;
-              const isCsv = f.type === "csv";
-              const isPy = f.type === "python";
+          <div className="space-y-1.5 max-h-[580px] overflow-y-auto pr-1 custom-scrollbar">
+            {loading ? (
+              <div className="p-4 text-xs text-slate-500 text-center">Loading files...</div>
+            ) : filteredFiles.length === 0 ? (
+              <div className="p-4 text-xs text-slate-500 text-center">No files in this category.</div>
+            ) : (
+              filteredFiles.map((f) => {
+                const isSelected = f.name === currentFile?.name;
 
-              return (
-                <button
-                  key={f.name}
-                  onClick={() => setSelectedFileName(f.name)}
-                  className={`w-full text-left p-2.5 rounded-lg border transition-all flex items-start gap-2.5 cursor-pointer ${
-                    isSelected
-                      ? "bg-sky-950/80 border-sky-500/60 text-white shadow-sm ring-1 ring-sky-500/30"
-                      : "bg-slate-800/30 border-slate-800/80 text-slate-400 hover:bg-slate-800/80 hover:text-slate-200"
-                  }`}
-                >
-                  <div className="mt-0.5 shrink-0">
-                    {isCsv ? (
-                      <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
-                    ) : isPy ? (
-                      <FileCode className="w-4 h-4 text-sky-400" />
-                    ) : (
-                      <BookOpen className="w-4 h-4 text-purple-400" />
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-xs font-mono font-semibold truncate text-white">{f.name}</div>
-                    <div className="text-[11px] text-slate-400 truncate mt-0.5">{f.title}</div>
-                  </div>
-                  {isSelected && <ChevronRight className="w-4 h-4 text-sky-400 shrink-0 self-center" />}
-                </button>
-              );
-            })}
+                return (
+                  <button
+                    key={`${f.category}-${f.name}`}
+                    onClick={() => setSelectedFileName(f.name)}
+                    className={`w-full text-left p-2.5 rounded-lg border transition-all flex items-start gap-2.5 cursor-pointer ${
+                      isSelected
+                        ? "bg-sky-950/80 border-sky-500/60 text-white shadow-sm ring-1 ring-sky-500/30"
+                        : "bg-slate-800/30 border-slate-800/80 text-slate-400 hover:bg-slate-800/80 hover:text-slate-200"
+                    }`}
+                  >
+                    <div className="mt-0.5 shrink-0">{getFileIcon(f)}</div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs font-mono font-semibold truncate text-white">
+                          {f.name}
+                        </span>
+                      </div>
+                      <div className="text-[11px] text-slate-400 truncate mt-0.5">{f.title}</div>
+                      <div className="mt-1">{getCategoryBadge(f.category)}</div>
+                    </div>
+                    {isSelected && <ChevronRight className="w-4 h-4 text-sky-400 shrink-0 self-center" />}
+                  </button>
+                );
+              })
+            )}
           </div>
         </div>
 
@@ -162,9 +342,10 @@ export const CurriculumExplorer: React.FC = () => {
           <div className="p-4 bg-slate-950/90 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <div className="flex items-center gap-2 font-mono text-sm font-bold text-white">
-                <FileCode className="w-4 h-4 text-sky-400" />
+                {currentFile && getFileIcon(currentFile)}
                 <span>{currentFile?.name}</span>
-                <span className="text-xs font-normal text-slate-400 px-2 py-0.5 rounded bg-slate-800 border border-slate-700">
+                {currentFile?.category && getCategoryBadge(currentFile.category)}
+                <span className="text-xs font-normal text-slate-400 px-2 py-0.5 rounded bg-slate-800 border border-slate-700 hidden sm:inline-block">
                   {currentFile?.title}
                 </span>
               </div>
@@ -200,50 +381,160 @@ export const CurriculumExplorer: React.FC = () => {
         </div>
       </div>
 
-      {/* Local Run Guide Card */}
-      <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 shadow-xl">
-        <h4 className="text-sm font-bold text-white flex items-center gap-2 pb-3 border-b border-slate-800">
-          <Terminal className="w-4 h-4 text-sky-400" />
-          <span>Local Running &amp; Execution Guide (Terminal Commands)</span>
-        </h4>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 text-xs">
-          {/* Step 1 */}
-          <div className="bg-slate-950/70 p-4 rounded-lg border border-slate-800 space-y-2">
-            <div className="flex items-center gap-2 text-sky-400 font-bold">
-              <span className="w-5 h-5 rounded-full bg-sky-500/20 flex items-center justify-center text-[10px]">1</span>
-              <span>Virtual Environment</span>
-            </div>
-            <p className="text-slate-400 text-[11px]">Create an isolated environment for Python 3.9+:</p>
-            <pre className="bg-slate-900 p-2.5 rounded text-[11px] text-slate-300 font-mono overflow-x-auto border border-slate-800">
-              python3 -m venv venv{"\n"}source venv/bin/activate
-            </pre>
-          </div>
-
-          {/* Step 2 */}
-          <div className="bg-slate-950/70 p-4 rounded-lg border border-slate-800 space-y-2">
-            <div className="flex items-center gap-2 text-indigo-400 font-bold">
-              <span className="w-5 h-5 rounded-full bg-indigo-500/20 flex items-center justify-center text-[10px]">2</span>
-              <span>Install Dependencies</span>
-            </div>
-            <p className="text-slate-400 text-[11px]">Install pandas, numpy, matplotlib, seaborn:</p>
-            <pre className="bg-slate-900 p-2.5 rounded text-[11px] text-slate-300 font-mono overflow-x-auto border border-slate-800">
-              pip install -r requirements.txt
-            </pre>
-          </div>
-
-          {/* Step 3 */}
-          <div className="bg-slate-950/70 p-4 rounded-lg border border-slate-800 space-y-2">
-            <div className="flex items-center gap-2 text-emerald-400 font-bold">
-              <span className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center text-[10px]">3</span>
-              <span>Execute Pipeline</span>
-            </div>
-            <p className="text-slate-400 text-[11px]">Run the integrated simulation and plot generator:</p>
-            <pre className="bg-slate-900 p-2.5 rounded text-[11px] text-slate-300 font-mono overflow-x-auto border border-slate-800">
-              python main.py
-            </pre>
-          </div>
+      {/* Subsystem Execution & Deployment Guides */}
+      <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 shadow-xl space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-800">
+          <h4 className="text-sm font-bold text-white flex items-center gap-2">
+            <Terminal className="w-4 h-4 text-sky-400" />
+            <span>Local Running &amp; Execution Guides by Subsystem</span>
+          </h4>
+          <span className="text-xs text-slate-400 font-mono">
+            Active view: {selectedCategory.toUpperCase()}
+          </span>
         </div>
+
+        {/* Dynamic execution instructions based on selected category */}
+        {selectedCategory === "java-core" ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+            <div className="bg-slate-950/70 p-4 rounded-lg border border-slate-800 space-y-2">
+              <div className="flex items-center gap-2 text-amber-400 font-bold">
+                <span className="w-5 h-5 rounded-full bg-amber-500/20 flex items-center justify-center text-[10px]">1</span>
+                <span>Java 17/21 SDK</span>
+              </div>
+              <p className="text-slate-400 text-[11px]">Verify Java compiler and runtime installation:</p>
+              <pre className="bg-slate-900 p-2.5 rounded text-[11px] text-slate-300 font-mono overflow-x-auto border border-slate-800">
+                javac -version{"\n"}java -version
+              </pre>
+            </div>
+
+            <div className="bg-slate-950/70 p-4 rounded-lg border border-slate-800 space-y-2">
+              <div className="flex items-center gap-2 text-amber-400 font-bold">
+                <span className="w-5 h-5 rounded-full bg-amber-500/20 flex items-center justify-center text-[10px]">2</span>
+                <span>Direct Javac Compilation</span>
+              </div>
+              <p className="text-slate-400 text-[11px]">Compile classes into output bin directory:</p>
+              <pre className="bg-slate-900 p-2.5 rounded text-[11px] text-slate-300 font-mono overflow-x-auto border border-slate-800">
+                mkdir -p bin{"\n"}javac -d bin java-core/src/main/java/com/airline/overbooking/*.java
+              </pre>
+            </div>
+
+            <div className="bg-slate-950/70 p-4 rounded-lg border border-slate-800 space-y-2">
+              <div className="flex items-center gap-2 text-emerald-400 font-bold">
+                <span className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center text-[10px]">3</span>
+                <span>Execute Java Simulation</span>
+              </div>
+              <p className="text-slate-400 text-[11px]">Run the enterprise Main driver with Min-Heap:</p>
+              <pre className="bg-slate-900 p-2.5 rounded text-[11px] text-slate-300 font-mono overflow-x-auto border border-slate-800">
+                java -cp bin com.airline.overbooking.Main
+              </pre>
+            </div>
+          </div>
+        ) : selectedCategory === "backend" ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+            <div className="bg-slate-950/70 p-4 rounded-lg border border-slate-800 space-y-2">
+              <div className="flex items-center gap-2 text-emerald-400 font-bold">
+                <span className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center text-[10px]">1</span>
+                <span>Environment Secrets</span>
+              </div>
+              <p className="text-slate-400 text-[11px]">Set Google Gemini API key in .env or Secret Manager:</p>
+              <pre className="bg-slate-900 p-2.5 rounded text-[11px] text-slate-300 font-mono overflow-x-auto border border-slate-800">
+                export GEMINI_API_KEY="your-key"{"\n"}export PORT=3000
+              </pre>
+            </div>
+
+            <div className="bg-slate-950/70 p-4 rounded-lg border border-slate-800 space-y-2">
+              <div className="flex items-center gap-2 text-sky-400 font-bold">
+                <span className="w-5 h-5 rounded-full bg-sky-500/20 flex items-center justify-center text-[10px]">2</span>
+                <span>Development Server</span>
+              </div>
+              <p className="text-slate-400 text-[11px]">Run full-stack Express server with Vite:</p>
+              <pre className="bg-slate-900 p-2.5 rounded text-[11px] text-slate-300 font-mono overflow-x-auto border border-slate-800">
+                npm run dev
+              </pre>
+            </div>
+
+            <div className="bg-slate-950/70 p-4 rounded-lg border border-slate-800 space-y-2">
+              <div className="flex items-center gap-2 text-purple-400 font-bold">
+                <span className="w-5 h-5 rounded-full bg-purple-500/20 flex items-center justify-center text-[10px]">3</span>
+                <span>Cloud Run Production</span>
+              </div>
+              <p className="text-slate-400 text-[11px]">Build static bundle and start Express container:</p>
+              <pre className="bg-slate-900 p-2.5 rounded text-[11px] text-slate-300 font-mono overflow-x-auto border border-slate-800">
+                npm run build{"\n"}npm start
+              </pre>
+            </div>
+          </div>
+        ) : selectedCategory === "frontend" ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+            <div className="bg-slate-950/70 p-4 rounded-lg border border-slate-800 space-y-2">
+              <div className="flex items-center gap-2 text-sky-400 font-bold">
+                <span className="w-5 h-5 rounded-full bg-sky-500/20 flex items-center justify-center text-[10px]">1</span>
+                <span>React 19 &amp; Tailwind</span>
+              </div>
+              <p className="text-slate-400 text-[11px]">Install UI dependencies and icons:</p>
+              <pre className="bg-slate-900 p-2.5 rounded text-[11px] text-slate-300 font-mono overflow-x-auto border border-slate-800">
+                npm install
+              </pre>
+            </div>
+
+            <div className="bg-slate-950/70 p-4 rounded-lg border border-slate-800 space-y-2">
+              <div className="flex items-center gap-2 text-indigo-400 font-bold">
+                <span className="w-5 h-5 rounded-full bg-indigo-500/20 flex items-center justify-center text-[10px]">2</span>
+                <span>Compile Assets</span>
+              </div>
+              <p className="text-slate-400 text-[11px]">Run production build with Vite bundler:</p>
+              <pre className="bg-slate-900 p-2.5 rounded text-[11px] text-slate-300 font-mono overflow-x-auto border border-slate-800">
+                npm run build
+              </pre>
+            </div>
+
+            <div className="bg-slate-950/70 p-4 rounded-lg border border-slate-800 space-y-2">
+              <div className="flex items-center gap-2 text-emerald-400 font-bold">
+                <span className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center text-[10px]">3</span>
+                <span>Interactive Live Testing</span>
+              </div>
+              <p className="text-slate-400 text-[11px]">Verify hot reload and responsive seat map:</p>
+              <pre className="bg-slate-900 p-2.5 rounded text-[11px] text-slate-300 font-mono overflow-x-auto border border-slate-800">
+                npm run dev
+              </pre>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+            <div className="bg-slate-950/70 p-4 rounded-lg border border-slate-800 space-y-2">
+              <div className="flex items-center gap-2 text-indigo-400 font-bold">
+                <span className="w-5 h-5 rounded-full bg-indigo-500/20 flex items-center justify-center text-[10px]">1</span>
+                <span>Virtual Environment</span>
+              </div>
+              <p className="text-slate-400 text-[11px]">Create an isolated environment for Python 3.9+:</p>
+              <pre className="bg-slate-900 p-2.5 rounded text-[11px] text-slate-300 font-mono overflow-x-auto border border-slate-800">
+                python3 -m venv venv{"\n"}source venv/bin/activate
+              </pre>
+            </div>
+
+            <div className="bg-slate-950/70 p-4 rounded-lg border border-slate-800 space-y-2">
+              <div className="flex items-center gap-2 text-indigo-400 font-bold">
+                <span className="w-5 h-5 rounded-full bg-indigo-500/20 flex items-center justify-center text-[10px]">2</span>
+                <span>Install Dependencies</span>
+              </div>
+              <p className="text-slate-400 text-[11px]">Install pandas, numpy, matplotlib, seaborn:</p>
+              <pre className="bg-slate-900 p-2.5 rounded text-[11px] text-slate-300 font-mono overflow-x-auto border border-slate-800">
+                pip install -r python_curriculum/requirements.txt
+              </pre>
+            </div>
+
+            <div className="bg-slate-950/70 p-4 rounded-lg border border-slate-800 space-y-2">
+              <div className="flex items-center gap-2 text-emerald-400 font-bold">
+                <span className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center text-[10px]">3</span>
+                <span>Execute Pipeline</span>
+              </div>
+              <p className="text-slate-400 text-[11px]">Run the integrated simulation and plot generator:</p>
+              <pre className="bg-slate-900 p-2.5 rounded text-[11px] text-slate-300 font-mono overflow-x-auto border border-slate-800">
+                python python_curriculum/main.py
+              </pre>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

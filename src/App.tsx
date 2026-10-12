@@ -213,6 +213,38 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<"simulation" | "seatmap" | "priorityqueue" | "curriculum" | "math">(
     "simulation"
   );
+  const [curriculumCategory, setCurriculumCategory] = useState<"all" | "frontend" | "backend" | "java-core" | "python">("all");
+
+  // Handle URL hash and redirection parameters
+  React.useEffect(() => {
+    const checkHash = () => {
+      const hash = window.location.hash.toLowerCase();
+      if (hash.includes("frontend")) {
+        setActiveTab("curriculum");
+        setCurriculumCategory("frontend");
+      } else if (hash.includes("backend")) {
+        setActiveTab("curriculum");
+        setCurriculumCategory("backend");
+      } else if (hash.includes("java-core") || hash.includes("java")) {
+        setActiveTab("curriculum");
+        setCurriculumCategory("java-core");
+      } else if (hash.includes("python")) {
+        setActiveTab("curriculum");
+        setCurriculumCategory("python");
+      } else if (hash.includes("curriculum")) {
+        setActiveTab("curriculum");
+      }
+    };
+    checkHash();
+    window.addEventListener("hashchange", checkHash);
+    return () => window.removeEventListener("hashchange", checkHash);
+  }, []);
+
+  const handleRedirectSubsystem = (cat: "frontend" | "backend" | "java-core" | "python") => {
+    setActiveTab("curriculum");
+    setCurriculumCategory(cat);
+    window.location.hash = `curriculum?category=${cat}`;
+  };
 
   const [flightParams, setFlightParams] = useState<FlightParams>({
     route: "DEL-BOM",
@@ -256,9 +288,9 @@ export default function App() {
     },
     {
       id: "curriculum" as const,
-      label: "Python Code Lab & CSVs",
-      shortLabel: "Python Lab",
-      badge: "Curriculum",
+      label: "Architecture & Code Lab",
+      shortLabel: "Code Lab",
+      badge: "Multi-Stack",
       icon: FileCode,
     },
     {
@@ -434,6 +466,61 @@ export default function App() {
                 </button>
               );
             })}
+            {/* Quick Subsystem Redirection Section */}
+            <div className="pt-3 border-t border-slate-800/80">
+              <div className="px-2 pb-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                Subsystem Redirects
+              </div>
+              <div className="grid grid-cols-2 gap-1.5">
+                <button
+                  onClick={() => handleRedirectSubsystem("frontend")}
+                  className={`p-2 rounded-lg text-left text-[11px] font-medium border transition-all cursor-pointer ${
+                    activeTab === "curriculum" && curriculumCategory === "frontend"
+                      ? "bg-sky-500/20 text-sky-300 border-sky-500/40"
+                      : "bg-slate-900/60 text-slate-400 border-slate-800/80 hover:bg-slate-850 hover:text-slate-200"
+                  }`}
+                >
+                  <div className="font-semibold text-sky-400">Frontend</div>
+                  <div className="text-[10px] text-slate-400">React &bull; TS</div>
+                </button>
+
+                <button
+                  onClick={() => handleRedirectSubsystem("backend")}
+                  className={`p-2 rounded-lg text-left text-[11px] font-medium border transition-all cursor-pointer ${
+                    activeTab === "curriculum" && curriculumCategory === "backend"
+                      ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
+                      : "bg-slate-900/60 text-slate-400 border-slate-800/80 hover:bg-slate-850 hover:text-slate-200"
+                  }`}
+                >
+                  <div className="font-semibold text-emerald-400">Backend</div>
+                  <div className="text-[10px] text-slate-400">Node &bull; Express</div>
+                </button>
+
+                <button
+                  onClick={() => handleRedirectSubsystem("java-core")}
+                  className={`p-2 rounded-lg text-left text-[11px] font-medium border transition-all cursor-pointer ${
+                    activeTab === "curriculum" && curriculumCategory === "java-core"
+                      ? "bg-amber-500/20 text-amber-300 border-amber-500/40"
+                      : "bg-slate-900/60 text-slate-400 border-slate-800/80 hover:bg-slate-850 hover:text-slate-200"
+                  }`}
+                >
+                  <div className="font-semibold text-amber-400">Java Core</div>
+                  <div className="text-[10px] text-slate-400">OOP &bull; Heaps</div>
+                </button>
+
+                <button
+                  onClick={() => handleRedirectSubsystem("python")}
+                  className={`p-2 rounded-lg text-left text-[11px] font-medium border transition-all cursor-pointer ${
+                    activeTab === "curriculum" && curriculumCategory === "python"
+                      ? "bg-indigo-500/20 text-indigo-300 border-indigo-500/40"
+                      : "bg-slate-900/60 text-slate-400 border-slate-800/80 hover:bg-slate-850 hover:text-slate-200"
+                  }`}
+                >
+                  <div className="font-semibold text-indigo-400">Python Lab</div>
+                  <div className="text-[10px] text-slate-400">NumPy &bull; Pandas</div>
+                </button>
+              </div>
+            </div>
           </nav>
 
           {/* Sidebar Footer info */}
@@ -494,7 +581,12 @@ export default function App() {
               />
             )}
 
-            {activeTab === "curriculum" && <CurriculumExplorer />}
+            {activeTab === "curriculum" && (
+              <CurriculumExplorer
+                key={curriculumCategory}
+                initialCategory={curriculumCategory}
+              />
+            )}
 
             {activeTab === "math" && <MathematicalReference />}
           </main>
