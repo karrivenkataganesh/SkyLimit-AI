@@ -23,7 +23,7 @@ export interface OverbookingAnalysisResult {
 export interface CurriculumFileMetadata {
   name: string;
   type: string;
-  category: "frontend" | "backend" | "java-core" | "python";
+  category: "frontend" | "backend" | "java-core";
   title: string;
   desc: string;
   content: string;

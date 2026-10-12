@@ -39,7 +39,7 @@ app.get("/java-core", (_req, res) => {
 });
 
 app.get("/python", (_req, res) => {
-  res.redirect("/#curriculum?category=python");
+  res.redirect("/#curriculum");
 });
 
 // 5. Start Express server with dynamic Vite dev middleware or production static files

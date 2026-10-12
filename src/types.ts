@@ -50,7 +50,7 @@ export interface Passenger {
 export interface CurriculumFile {
   name: string;
   type: string;
-  category?: "frontend" | "backend" | "java-core" | "python";
+  category?: "frontend" | "backend" | "java-core";
   title: string;
   desc: string;
   content: string;

@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { CurriculumFile } from "../types";
 
-type CategoryKey = "all" | "frontend" | "backend" | "java-core" | "python";
+type CategoryKey = "all" | "frontend" | "backend" | "java-core";
 
 interface CurriculumExplorerProps {
   initialCategory?: CategoryKey;
@@ -41,7 +41,7 @@ export const CurriculumExplorer: React.FC<CurriculumExplorerProps> = ({
       const params = new URLSearchParams(window.location.search);
       const catParam = params.get("category")?.toLowerCase();
 
-      if (catParam && ["frontend", "backend", "java-core", "python"].includes(catParam)) {
+      if (catParam && ["frontend", "backend", "java-core"].includes(catParam)) {
         setSelectedCategory(catParam as CategoryKey);
       } else if (hash.includes("frontend")) {
         setSelectedCategory("frontend");
@@ -49,8 +49,6 @@ export const CurriculumExplorer: React.FC<CurriculumExplorerProps> = ({
         setSelectedCategory("backend");
       } else if (hash.includes("java-core") || hash.includes("java")) {
         setSelectedCategory("java-core");
-      } else if (hash.includes("python")) {
-        setSelectedCategory("python");
       }
     };
 
@@ -189,19 +187,11 @@ export const CurriculumExplorer: React.FC<CurriculumExplorerProps> = ({
       color: "text-amber-400",
       badgeBg: "bg-amber-500/20 text-amber-300 border-amber-500/30",
     },
-    {
-      id: "python",
-      label: "Python Curriculum",
-      icon: Code,
-      color: "text-indigo-400",
-      badgeBg: "bg-indigo-500/20 text-indigo-300 border-indigo-500/30",
-    },
   ];
 
   const getFileIcon = (file: CurriculumFile) => {
     if (file.type === "java") return <Coffee className="w-4 h-4 text-amber-400" />;
     if (file.type === "typescript") return <Layout className="w-4 h-4 text-sky-400" />;
-    if (file.type === "python") return <FileCode className="w-4 h-4 text-indigo-400" />;
     if (file.type === "csv") return <FileSpreadsheet className="w-4 h-4 text-emerald-400" />;
     return <BookOpen className="w-4 h-4 text-purple-400" />;
   };
@@ -214,8 +204,6 @@ export const CurriculumExplorer: React.FC<CurriculumExplorerProps> = ({
         return <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono">Backend</span>;
       case "java-core":
         return <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono">Java Core</span>;
-      case "python":
-        return <span className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 font-mono">Python</span>;
       default:
         return null;
     }
@@ -234,7 +222,7 @@ export const CurriculumExplorer: React.FC<CurriculumExplorerProps> = ({
           </div>
           <h3 className="text-lg font-bold text-white mt-1 flex items-center gap-2">
             <Code className="w-5 h-5 text-sky-400" />
-            <span>Architecture &amp; Code Lab: Frontend, Backend, Java Core, and Python</span>
+            <span>Architecture &amp; Code Lab: Frontend, Backend, and Java Core</span>
           </h3>
           <p className="text-xs text-slate-400 mt-0.5">
             Explore code organized by subsystem. Select a category below or redirect directly to Frontend, Backend, or Java Core.
@@ -288,70 +276,87 @@ export const CurriculumExplorer: React.FC<CurriculumExplorerProps> = ({
         })}
       </div>
 
-      {/* Main Layout: Code Viewer (Full Width) */}
-      <div className="w-full">
-        {/* Code & Content Viewer */}
-        <div className="bg-slate-900/80 border border-slate-800 rounded-xl shadow-xl overflow-hidden flex flex-col">
-          {/* Header Bar */}
-          <div className="p-4 bg-slate-950/90 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex-1 min-w-0">
-              <div className="flex flex-wrap items-center gap-2 font-mono text-sm font-bold text-white">
-                {currentFile && getFileIcon(currentFile)}
-                <span>{currentFile?.name}</span>
-                {currentFile?.category && getCategoryBadge(currentFile.category)}
-                <span className="text-xs font-normal text-slate-400 px-2 py-0.5 rounded bg-slate-800 border border-slate-700 hidden sm:inline-block">
-                  {currentFile?.title}
-                </span>
-              </div>
-              <p className="text-xs text-slate-400 mt-1">{currentFile?.desc}</p>
-            </div>
-
-            {/* Actions: File switcher + Copy + Download */}
-            <div className="flex flex-wrap items-center gap-2 shrink-0">
-              {filteredFiles.length > 1 && (
-                <div className="flex items-center gap-1.5 mr-1">
-                  <label htmlFor="file-select" className="text-[11px] text-slate-400 font-mono hidden md:inline">
-                    Active File:
-                  </label>
-                  <select
-                    id="file-select"
-                    value={currentFile?.name || ""}
-                    onChange={(e) => setSelectedFileName(e.target.value)}
-                    className="bg-slate-800 border border-slate-700 text-white text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-sky-500 font-mono cursor-pointer"
-                  >
-                    {filteredFiles.map((f) => (
-                      <option key={`${f.category}-${f.name}`} value={f.name}>
-                        {f.name} ({f.title})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
-              <button
-                onClick={handleCopy}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition-all cursor-pointer"
+      {/* Code & Content Viewer */}
+      <div className="w-full bg-slate-900/80 border border-slate-800 rounded-xl shadow-xl overflow-hidden flex flex-col">
+        {/* Header Bar */}
+        <div className="p-4 bg-slate-950/90 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2">
+              {currentFile && getFileIcon(currentFile)}
+              <select
+                value={currentFile?.name}
+                onChange={(e) => setSelectedFileName(e.target.value)}
+                aria-label="Select file"
+                className="bg-slate-900 text-white font-mono text-xs sm:text-sm font-bold border border-slate-700 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-sky-500 cursor-pointer"
               >
-                {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                <span>{copied ? "Copied!" : "Copy Code"}</span>
-              </button>
-
-              <button
-                onClick={handleDownloadSingle}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold shadow-sm transition-all cursor-pointer"
-              >
-                <Download className="w-3.5 h-3.5" />
-                <span>Download</span>
-              </button>
+                {filteredFiles.map((f) => (
+                  <option key={f.name} value={f.name}>
+                    {f.name} — {f.title}
+                  </option>
+                ))}
+              </select>
             </div>
+            {currentFile?.category && getCategoryBadge(currentFile.category)}
+            <span className="text-xs font-normal text-slate-400 px-2 py-0.5 rounded bg-slate-800 border border-slate-700 hidden md:inline-block">
+              {currentFile?.title}
+            </span>
           </div>
 
-          {/* Code Viewer Body */}
-          <div className="p-4 bg-slate-950 font-mono text-xs overflow-x-auto max-h-[580px] custom-scrollbar">
-            <pre className="text-slate-300 leading-relaxed">
-              <code>{currentFile?.content || "# Loading file content..."}</code>
-            </pre>
+          {/* Actions */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleCopy}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition-all cursor-pointer"
+            >
+              {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+              <span>{copied ? "Copied!" : "Copy Code"}</span>
+            </button>
+
+            <button
+              onClick={handleDownloadSingle}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold shadow-sm transition-all cursor-pointer"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>Download</span>
+            </button>
           </div>
+        </div>
+
+        {/* Quick File Switcher Bar */}
+        <div className="px-4 py-2 bg-slate-900/60 border-b border-slate-800/80 flex items-center gap-2 overflow-x-auto custom-scrollbar">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 shrink-0">
+            Files ({filteredFiles.length}):
+          </span>
+          {loading ? (
+            <span className="text-xs text-slate-500 font-mono">Loading files...</span>
+          ) : filteredFiles.length === 0 ? (
+            <span className="text-xs text-slate-500 font-mono">No files in category</span>
+          ) : (
+            filteredFiles.map((f) => {
+              const isSelected = f.name === currentFile?.name;
+              return (
+                <button
+                  key={f.name}
+                  onClick={() => setSelectedFileName(f.name)}
+                  className={`px-2.5 py-1 rounded-md text-xs font-mono transition-all shrink-0 flex items-center gap-1.5 cursor-pointer ${
+                    isSelected
+                      ? "bg-sky-600 text-white font-semibold shadow-sm shadow-sky-600/30"
+                      : "bg-slate-800/60 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-800"
+                  }`}
+                >
+                  {getFileIcon(f)}
+                  <span>{f.name}</span>
+                </button>
+              );
+            })
+          )}
+        </div>
+
+        {/* Code Viewer Body */}
+        <div className="p-4 bg-slate-950 font-mono text-xs overflow-x-auto max-h-[620px] custom-scrollbar">
+          <pre className="text-slate-300 leading-relaxed">
+            <code>{currentFile?.content || "# Loading file content..."}</code>
+          </pre>
         </div>
       </div>
 
@@ -476,35 +481,35 @@ export const CurriculumExplorer: React.FC<CurriculumExplorerProps> = ({
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
             <div className="bg-slate-950/70 p-4 rounded-lg border border-slate-800 space-y-2">
-              <div className="flex items-center gap-2 text-indigo-400 font-bold">
-                <span className="w-5 h-5 rounded-full bg-indigo-500/20 flex items-center justify-center text-[10px]">1</span>
-                <span>Virtual Environment</span>
+              <div className="flex items-center gap-2 text-amber-400 font-bold">
+                <span className="w-5 h-5 rounded-full bg-amber-500/20 flex items-center justify-center text-[10px]">1</span>
+                <span>Java Core Optimization</span>
               </div>
-              <p className="text-slate-400 text-[11px]">Create an isolated environment for Python 3.9+:</p>
+              <p className="text-slate-400 text-[11px]">Compile and test Java priority queue and Newsvendor engine:</p>
               <pre className="bg-slate-900 p-2.5 rounded text-[11px] text-slate-300 font-mono overflow-x-auto border border-slate-800">
-                python3 -m venv venv{"\n"}source venv/bin/activate
-              </pre>
-            </div>
-
-            <div className="bg-slate-950/70 p-4 rounded-lg border border-slate-800 space-y-2">
-              <div className="flex items-center gap-2 text-indigo-400 font-bold">
-                <span className="w-5 h-5 rounded-full bg-indigo-500/20 flex items-center justify-center text-[10px]">2</span>
-                <span>Install Dependencies</span>
-              </div>
-              <p className="text-slate-400 text-[11px]">Install pandas, numpy, matplotlib, seaborn:</p>
-              <pre className="bg-slate-900 p-2.5 rounded text-[11px] text-slate-300 font-mono overflow-x-auto border border-slate-800">
-                pip install -r python_curriculum/requirements.txt
+                javac -d bin java-core/src/main/java/com/airline/overbooking/*.java
               </pre>
             </div>
 
             <div className="bg-slate-950/70 p-4 rounded-lg border border-slate-800 space-y-2">
               <div className="flex items-center gap-2 text-emerald-400 font-bold">
-                <span className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center text-[10px]">3</span>
-                <span>Execute Pipeline</span>
+                <span className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center text-[10px]">2</span>
+                <span>Backend API &amp; Gemini</span>
               </div>
-              <p className="text-slate-400 text-[11px]">Run the integrated simulation and plot generator:</p>
+              <p className="text-slate-400 text-[11px]">Run Express service with AI fallback ladder:</p>
               <pre className="bg-slate-900 p-2.5 rounded text-[11px] text-slate-300 font-mono overflow-x-auto border border-slate-800">
-                python python_curriculum/main.py
+                npm run dev
+              </pre>
+            </div>
+
+            <div className="bg-slate-950/70 p-4 rounded-lg border border-slate-800 space-y-2">
+              <div className="flex items-center gap-2 text-sky-400 font-bold">
+                <span className="w-5 h-5 rounded-full bg-sky-500/20 flex items-center justify-center text-[10px]">3</span>
+                <span>Frontend UI &amp; Curves</span>
+              </div>
+              <p className="text-slate-400 text-[11px]">Interactive SVG simulation curves and 2D cabin map:</p>
+              <pre className="bg-slate-900 p-2.5 rounded text-[11px] text-slate-300 font-mono overflow-x-auto border border-slate-800">
+                npm run build
               </pre>
             </div>
           </div>

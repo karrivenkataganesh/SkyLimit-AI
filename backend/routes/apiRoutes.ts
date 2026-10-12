@@ -17,7 +17,7 @@ apiRouter.post("/predict-overbooking", FlightController.predictOverbooking);
  */
 export function getAllProjectFiles(baseDir: string): CurriculumFileMetadata[] {
   const fileRegistry: {
-    category: "frontend" | "backend" | "java-core" | "python";
+    category: "frontend" | "backend" | "java-core";
     name: string;
     subPath: string;
     type: string;
@@ -188,96 +188,6 @@ export function getAllProjectFiles(baseDir: string): CurriculumFileMetadata[] {
       type: "typescript",
       title: "Frontend TypeScript Interfaces",
       desc: "Domain types for flight params, passenger entities, analysis responses, and files",
-    },
-
-    // Python curriculum files
-    {
-      category: "python",
-      name: "overbooking_engine.py",
-      subPath: "python_curriculum/overbooking_engine.py",
-      type: "python",
-      title: "Probability & Optimization Engine",
-      desc: "Binomial distribution PMF/CDF, Newsvendor critical ratio, profit curve",
-    },
-    {
-      category: "python",
-      name: "seat_matrix.py",
-      subPath: "python_curriculum/seat_matrix.py",
-      type: "python",
-      title: "Cabin Seat Matrix & Arrays",
-      desc: "2D numpy cabin grid, sector slicing, load factor dot products",
-    },
-    {
-      category: "python",
-      name: "priority_queue.py",
-      subPath: "python_curriculum/priority_queue.py",
-      type: "python",
-      title: "Priority Queue (Min-Heap)",
-      desc: "heapq passenger bumping queue, composite protection scoring",
-    },
-    {
-      category: "python",
-      name: "data_manager.py",
-      subPath: "python_curriculum/data_manager.py",
-      type: "python",
-      title: "Pandas CSV File I/O",
-      desc: "Flight log ingestion, schema validation, time series aggregation",
-    },
-    {
-      category: "python",
-      name: "ai_optimizer.py",
-      subPath: "python_curriculum/ai_optimizer.py",
-      type: "python",
-      title: "Applied AI Layer (Gemini)",
-      desc: "Historical trend analysis, prompt engineering, multi-model fallback",
-    },
-    {
-      category: "python",
-      name: "visualizer.py",
-      subPath: "python_curriculum/visualizer.py",
-      type: "python",
-      title: "Matplotlib & Seaborn Visualizer",
-      desc: "Seat utilization vs bump risk dual-axis curve plotting",
-    },
-    {
-      category: "python",
-      name: "main.py",
-      subPath: "python_curriculum/main.py",
-      type: "python",
-      title: "Main Execution Driver",
-      desc: "End-to-end simulation runner integrating all Python modules",
-    },
-    {
-      category: "python",
-      name: "flight_history.csv",
-      subPath: "python_curriculum/flight_history.csv",
-      type: "csv",
-      title: "Historical Flights Dataset",
-      desc: "20 historical flight logs with no-show rates and fares in INR",
-    },
-    {
-      category: "python",
-      name: "current_bookings.csv",
-      subPath: "python_curriculum/current_bookings.csv",
-      type: "csv",
-      title: "Live Flight Bookings Dataset",
-      desc: "20 passenger manifests with tiers, timestamps, and fare classes in INR",
-    },
-    {
-      category: "python",
-      name: "requirements.txt",
-      subPath: "python_curriculum/requirements.txt",
-      type: "text",
-      title: "Python Dependencies",
-      desc: "Pip requirements for local virtual environment",
-    },
-    {
-      category: "python",
-      name: "README.md",
-      subPath: "python_curriculum/README.md",
-      type: "markdown",
-      title: "Student Execution Guide",
-      desc: "Detailed step-by-step local running instructions and risk formulas",
     },
   ];
 

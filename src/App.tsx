@@ -213,7 +213,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<"simulation" | "seatmap" | "priorityqueue" | "curriculum" | "math">(
     "simulation"
   );
-  const [curriculumCategory, setCurriculumCategory] = useState<"all" | "frontend" | "backend" | "java-core" | "python">("all");
+  const [curriculumCategory, setCurriculumCategory] = useState<"all" | "frontend" | "backend" | "java-core">("all");
 
   // Handle URL hash and redirection parameters
   React.useEffect(() => {
@@ -228,9 +228,6 @@ export default function App() {
       } else if (hash.includes("java-core") || hash.includes("java")) {
         setActiveTab("curriculum");
         setCurriculumCategory("java-core");
-      } else if (hash.includes("python")) {
-        setActiveTab("curriculum");
-        setCurriculumCategory("python");
       } else if (hash.includes("curriculum")) {
         setActiveTab("curriculum");
       }
@@ -239,6 +236,12 @@ export default function App() {
     window.addEventListener("hashchange", checkHash);
     return () => window.removeEventListener("hashchange", checkHash);
   }, []);
+
+  const handleRedirectSubsystem = (cat: "frontend" | "backend" | "java-core") => {
+    setActiveTab("curriculum");
+    setCurriculumCategory(cat);
+    window.location.hash = `curriculum?category=${cat}`;
+  };
 
   const [flightParams, setFlightParams] = useState<FlightParams>({
     route: "DEL-BOM",
