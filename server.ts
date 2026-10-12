@@ -51,6 +51,7 @@ async function startServer() {
   const isProduction =
     process.env.NODE_ENV === "production" ||
     Boolean(process.env.K_SERVICE) ||
+    Boolean(process.env.RENDER) ||
     hasDist;
 
   if (!isProduction) {

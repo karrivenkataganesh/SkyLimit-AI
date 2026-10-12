@@ -30,9 +30,12 @@ export const CurriculumExplorer: React.FC<CurriculumExplorerProps> = ({
 }) => {
   const [files, setFiles] = useState<CurriculumFile[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<CategoryKey>(initialCategory);
-  const [selectedFileName, setSelectedFileName] = useState<string>("");
+  const [selectedFileId, setSelectedFileId] = useState<string>("");
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  // Helper to compute a strictly unique file ID
+  const getFileId = (f: CurriculumFile): string => f.id || `${f.category || "general"}/${f.name}`;
 
   // Sync category from URL hash or query params if present
   useEffect(() => {
@@ -65,9 +68,9 @@ export const CurriculumExplorer: React.FC<CurriculumExplorerProps> = ({
       .then((data) => {
         if (data.success && data.files) {
           setFiles(data.files);
-          // Set initial file
-          if (!selectedFileName && data.files.length > 0) {
-            setSelectedFileName(data.files[0].name);
+          // Set initial file ID
+          if (!selectedFileId && data.files.length > 0) {
+            setSelectedFileId(getFileId(data.files[0]));
           }
         }
       })
@@ -84,15 +87,15 @@ export const CurriculumExplorer: React.FC<CurriculumExplorerProps> = ({
   // Ensure selected file is within current filter
   useEffect(() => {
     if (filteredFiles.length > 0) {
-      const stillInFilter = filteredFiles.some((f) => f.name === selectedFileName);
+      const stillInFilter = filteredFiles.some((f) => getFileId(f) === selectedFileId);
       if (!stillInFilter) {
-        setSelectedFileName(filteredFiles[0].name);
+        setSelectedFileId(getFileId(filteredFiles[0]));
       }
     }
   }, [selectedCategory, files]);
 
   const currentFile =
-    filteredFiles.find((f) => f.name === selectedFileName) ||
+    filteredFiles.find((f) => getFileId(f) === selectedFileId) ||
     filteredFiles[0] ||
     files[0];
 
@@ -284,16 +287,19 @@ export const CurriculumExplorer: React.FC<CurriculumExplorerProps> = ({
             <div className="flex items-center gap-2">
               {currentFile && getFileIcon(currentFile)}
               <select
-                value={currentFile?.name}
-                onChange={(e) => setSelectedFileName(e.target.value)}
+                value={currentFile ? getFileId(currentFile) : ""}
+                onChange={(e) => setSelectedFileId(e.target.value)}
                 aria-label="Select file"
                 className="bg-slate-900 text-white font-mono text-xs sm:text-sm font-bold border border-slate-700 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-sky-500 cursor-pointer"
               >
-                {filteredFiles.map((f) => (
-                  <option key={f.name} value={f.name}>
-                    {f.name} — {f.title}
-                  </option>
-                ))}
+                {filteredFiles.map((f) => {
+                  const fileId = getFileId(f);
+                  return (
+                    <option key={fileId} value={fileId}>
+                      {f.name} {selectedCategory === "all" ? `(${f.category})` : ""} — {f.title}
+                    </option>
+                  );
+                })}
               </select>
             </div>
             {currentFile?.category && getCategoryBadge(currentFile.category)}
@@ -333,11 +339,12 @@ export const CurriculumExplorer: React.FC<CurriculumExplorerProps> = ({
             <span className="text-xs text-slate-500 font-mono">No files in category</span>
           ) : (
             filteredFiles.map((f) => {
-              const isSelected = f.name === currentFile?.name;
+              const fileId = getFileId(f);
+              const isSelected = fileId === (currentFile ? getFileId(currentFile) : "");
               return (
                 <button
-                  key={f.name}
-                  onClick={() => setSelectedFileName(f.name)}
+                  key={fileId}
+                  onClick={() => setSelectedFileId(fileId)}
                   className={`px-2.5 py-1 rounded-md text-xs font-mono transition-all shrink-0 flex items-center gap-1.5 cursor-pointer ${
                     isSelected
                       ? "bg-sky-600 text-white font-semibold shadow-sm shadow-sky-600/30"
@@ -346,6 +353,9 @@ export const CurriculumExplorer: React.FC<CurriculumExplorerProps> = ({
                 >
                   {getFileIcon(f)}
                   <span>{f.name}</span>
+                  {selectedCategory === "all" && (
+                    <span className="text-[10px] opacity-70 font-sans">({f.category})</span>
+                  )}
                 </button>
               );
             })

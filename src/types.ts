@@ -48,6 +48,7 @@ export interface Passenger {
 }
 
 export interface CurriculumFile {
+  id?: string;
   name: string;
   type: string;
   category?: "frontend" | "backend" | "java-core";

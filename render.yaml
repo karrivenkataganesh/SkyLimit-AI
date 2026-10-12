@@ -1,12 +1,21 @@
+# Render Blueprint Specification
+# Docs: https://render.com/docs/blueprint-spec
 services:
   - type: web
     name: airline-overbooking-manager
     runtime: node
     plan: free
+    region: oregon
     buildCommand: npm install && npm run build
     startCommand: npm start
+    healthCheckPath: /health
+    autoDeploy: true
     envVars:
+      - key: NODE_VERSION
+        value: 22.14.0
       - key: NODE_ENV
         value: production
+      - key: PORT
+        value: 10000
       - key: GEMINI_API_KEY
         sync: false

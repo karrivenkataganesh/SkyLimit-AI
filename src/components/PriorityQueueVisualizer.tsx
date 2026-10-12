@@ -320,7 +320,7 @@ export const PriorityQueueVisualizer: React.FC<Props> = ({
                 <p className="text-xs text-slate-500 text-center py-4">No passengers bumped yet.</p>
               ) : (
                 bumpAuditLog.map((log, i) => (
-                  <div key={i} className="p-2.5 rounded bg-slate-950 border border-rose-900/40 text-xs space-y-1">
+                  <div key={`${log.id}-${i}`} className="p-2.5 rounded bg-slate-950 border border-rose-900/40 text-xs space-y-1">
                     <div className="flex items-center justify-between">
                       <span className="font-bold text-rose-300">{log.name}</span>
                       <span className="text-[10px] text-slate-500 font-mono">{log.timestamp}</span>

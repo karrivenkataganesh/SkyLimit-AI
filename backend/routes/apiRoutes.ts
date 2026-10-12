@@ -202,6 +202,7 @@ export function getAllProjectFiles(baseDir: string): CurriculumFileMetadata[] {
       }
     }
     return {
+      id: `${item.category}/${item.name}`,
       name: item.name,
       type: item.type,
       category: item.category,

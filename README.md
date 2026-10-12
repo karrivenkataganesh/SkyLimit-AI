@@ -206,66 +206,51 @@ gcloud run services update airline-overbooking-manager \
 
 ---
 
-## Multi-Platform Deployment Guides
+## Deploy to Render via GitHub
 
-This repository is pre-configured with declarative deployment manifests and zero-config files for all major cloud and container hosting platforms:
+This project is pre-configured for seamless zero-downtime deployment on [Render](https://render.com) using GitHub integration.
 
-### 1. Render (`render.yaml`)
-- **Type**: Web Service (Node.js runtime or Docker)
-- **Manifest**: `render.yaml` included in root.
-- **Steps**:
-  1. Link your GitHub repository in the [Render Dashboard](https://dashboard.render.com).
-  2. Render will automatically detect `render.yaml` (Build Command: `npm install && npm run build`, Start Command: `npm start`).
-  3. Under **Environment Variables**, set:
-     - `GEMINI_API_KEY`: Your Gemini API key.
-     - `NODE_ENV`: `production`.
-  4. Deploy! The service will bind to `$PORT` and serve both frontend and backend seamlessly.
+### Method 1: Automated Blueprint Deployment (Recommended)
 
-### 2. Vercel (`vercel.json` & Serverless Function)
-- **Manifest**: `vercel.json` and `api/index.ts`.
-- **Steps**:
-  1. Import the repository into the [Vercel Dashboard](https://vercel.com).
-  2. Framework Preset: **Vite** (Root Directory: `./`).
-  3. Build Command: `npm run build` | Output Directory: `dist`.
-  4. In **Settings -> Environment Variables**, add:
-     - `GEMINI_API_KEY`: Your Gemini API key.
-  5. Deploy! Vercel serves the static frontend assets from edge CDNs while routing `/api/*` and subsystem redirects (`/frontend`, `/backend`, `/java-core`, `/python`) via the serverless Express function in `api/index.ts`.
+Render's Infrastructure-as-Code Blueprint (`render.yaml`) automatically configures the web service, build steps, health probes, and runtime environment.
 
-### 3. Railway (`railway.json` & `Dockerfile`)
-- **Manifest**: `railway.json` and `Dockerfile`.
-- **Steps**:
-  1. Click **New Project** -> **Deploy from GitHub repo** in [Railway](https://railway.app).
-  2. Railway will automatically select the root `Dockerfile`.
-  3. In **Variables**, add `GEMINI_API_KEY`.
-  4. Railway provides a live HTTPS domain with automatic SSL and port forwarding.
+1. **Push your repository to GitHub**:
+   ```bash
+   git add .
+   git commit -m "Configure Render deployment files"
+   git push origin main
+   ```
+2. **Deploy on Render**:
+   - Go to your [Render Dashboard](https://dashboard.render.com/).
+   - Click **New +** in the top right and select **Blueprint**.
+   - Connect your GitHub repository.
+   - Render automatically detects `render.yaml` and initializes the `airline-overbooking-manager` Web Service.
+   - In the **Environment Variables** prompt, enter your `GEMINI_API_KEY`.
+   - Click **Apply**. Render will automatically build the frontend bundle and boot the production Express server!
 
-### 4. Fly.io (`fly.toml` & `Dockerfile`)
-- **Manifest**: `fly.toml` and `Dockerfile`.
-- **Steps**:
-  1. Install the Fly CLI: `curl -L https://fly.io/install.sh | sh`
-  2. Run `fly launch` (it will detect `fly.toml` and `Dockerfile`).
-  3. Set your secret: `fly secrets set GEMINI_API_KEY=YOUR_GEMINI_API_KEY`
-  4. Deploy: `fly deploy`
+### Method 2: Manual Web Service Setup on Render
 
-### 5. Netlify (`netlify.toml`)
-- **Manifest**: `netlify.toml`.
-- **Steps**:
-  1. Link the repository in [Netlify](https://app.netlify.com).
-  2. Netlify reads `netlify.toml` automatically: Build command `npm run build`, publish directory `dist`.
-  3. Set environment variables under **Site configuration -> Environment variables**.
-  4. Deploy! The SPA rewrite rules and subsystem redirects are handled at the edge.
+If you prefer to configure the service manually on Render:
 
-### 6. Container / Docker Anywhere (AWS ECS, Azure App Service, DigitalOcean, self-hosted VPS)
-- **Dockerfile**: Multi-stage Alpine container (`node:22-alpine`).
-- **Steps**:
-  ```bash
-  # Build container image
-  docker build -t airline-overbooking-manager .
-
-  # Run container locally or in production
-  docker run -p 8080:8080 -e GEMINI_API_KEY="your-api-key" airline-overbooking-manager
-  ```
-  Access the app at `http://localhost:8080`.
+1. In the Render Dashboard, click **New +** → **Web Service**.
+2. Connect your GitHub repository.
+3. Configure the following service settings:
+   - **Name**: `airline-overbooking-manager`
+   - **Runtime**: `Node`
+   - **Branch**: `main` (or your default branch)
+   - **Region**: Any (e.g. `Oregon (US West)` or `Singapore`)
+   - **Build Command**: `npm install && npm run build`
+   - **Start Command**: `npm start`
+4. Expand **Advanced Settings**:
+   - **Health Check Path**: `/health`
+   - **Auto-Deploy**: `Yes`
+5. Add the following **Environment Variables**:
+   | Key | Value | Notes |
+   | :--- | :--- | :--- |
+   | `NODE_VERSION` | `22.14.0` | Ensures Render provisions Node 22 with ESM/TS support |
+   | `NODE_ENV` | `production` | Enables production static caching |
+   | `GEMINI_API_KEY` | `your-gemini-api-key` | Secret key for Gemini risk optimization |
+6. Click **Create Web Service**. Render will execute `npm install && npm run build` and launch the app via `npm start`.
 
 ---
 

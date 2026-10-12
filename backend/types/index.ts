@@ -21,6 +21,7 @@ export interface OverbookingAnalysisResult {
 }
 
 export interface CurriculumFileMetadata {
+  id: string;
   name: string;
   type: string;
   category: "frontend" | "backend" | "java-core";
